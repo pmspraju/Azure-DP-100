@@ -1,0 +1,396 @@
+Create Azure account
+Create a resource - Machine Learning
+Create a compute instance:
+Compute page (under Manage). This is where you manage the compute targets for your data science activities. There are four kinds of compute resource you can create:
+  - Compute Instances: Development workstations that data scientists can use to work with data and models.
+  - Compute Clusters: Scalable clusters of virtual machines for on-demand processing of experiment code.
+  - Inference Clusters: Deployment targets for predictive services that use your trained models.
+  - Attached Compute: Links to existing Azure compute resources, such as Virtual Machines or Azure Databricks clusters.
+
+Add a computer cluster - is used to train a machine learning model
+
+Under compute - 
+Dataset creation - 
+  Tab Datasets - 
+    Create dataset 
+    Select the options - Delimiter, encoding etc
+
+  Tab Automated ML -
+    New Automated ML run - each run is called as an experimen
+    Give the deetails of the experiment
+    Select the concurrent run basing on the nodes of the cluster
+    enable featurization 
+    Block the models not required
+    Run the model for selected models
+    Check the details, metrics and explainbility of best model
+
+  Deploy best model as service - 
+    In Azure Machine Learning, you can deploy a service as an 
+    Azure Container Instances (ACI) or
+    Azure Kubernetes Service (AKS) cluster.
+	
+    This type of compute is created dynamically, and is useful for development and testing. 
+    For production, you should create an inference cluster, which provides an Azure Kubernetes Service (AKS) 
+    cluster that provides better scalability and security.
+ 
+    select the Best model and Use 'Deploy' tab to deploy the model as service
+    Under this model, check the deployment status
+  
+  End points - 
+    Under this tab, we can see the 
+    Rest endpoint and Swagger end point
+    Under Consume tab - observe the primary key and Rest end point 
+ 
+Azure Machine Learning workspaces:
+----------------------------------
+A workspace is a context for the experiments, data, compute targets, and other assets associated with a machine learning workload.
+
+ML Assets:
+-Compute targets for development, training, and deployment.
+-Data for experimentation and model training.
+-Notebooks containing shared code and documentation.
+-Experiments, including run history with logged metrics and outputs.
+-Pipelines that define orchestrated multi-step processes.
+-Models that you have trained.
+
+Ways to create a workspace - 
+- In the Microsoft Azure portal, create a new Machine Learning resource, specifying the subscription, resource group and workspace name.
+- Use the Azure Machine Learning Python SDK to run code that creates a workspace. For example, the following code creates a workspace 
+  named aml-workspace (assuming the Azure ML SDK for Python is installed and a valid subscription ID is specified)
+- Use the Azure Command Line Interface (CLI) with the Azure Machine Learning CLI extension. For example, you could use the following 
+  command (which assumes a resource group named aml-resources has already been created)
+
+Type of compute resource - 
+- Compute instances: Development workstations that data scientists can use to work with data and models.
+- Compute clusters: Scalable clusters of virtual machines for on-demand processing of experiment code.
+- Inference clusters: Deployment targets for predictive services that use your trained models.
+- Attached compute: Links to other Azure compute resources, such as Virtual Machines or Azure Databricks clusters.
+
+
+Usual steps - 
+Dataset - 
+- Upload the dataset- local or web
+- register the dataset
+
+Prepare the data - 
+- Create the script
+	- Get the parameters
+	- Get the experiment run context
+	- Perform preprocessing steps
+	- Save the prepped data
+
+Train the model - 
+- Create the scrpit 
+	- Get the parameters
+	- Get the run context
+	- Load the prepped data
+	- Split the data for Train and Test
+	- Run the model
+	- Compute the metrics and graphs
+	- Save the model - (.pkl) file
+	- Register the model
+
+Prepare the compute environment - 
+use the same compute for both steps, but it's important to realize that each step is run independently; 
+so you could specify different compute contexts for each step if appropriate
+- Create the cluster
+- Create the python environment and dependencies
+- Add the dependencies to the environment
+- Register the environment
+- Create the run configuration. Assign target = cluster and environment = above registered env
+
+Create the pipeline and run - 
+First you need to define the steps for the pipeline, and any data references that need to be 
+passed between them. In this case, the first step must write the prepared data to a folder that 
+can be read from by the second step. Since the steps will be run on remote compute (and in fact, 
+could each be run on different compute), the folder path must be passed as a data reference to 
+a location in a datastore within the workspace. The PipelineData object is a special kind of data
+ reference that is used for interim storage locations that can be passed between pipeline steps, 
+so you'll create one and use at as the output for the first step and the input for the second step. 
+Note that you also need to pass it as a script argument so our code can access the datastore 
+location referenced by the data reference.
+- Get the training dataset
+- Create the pipeline data - temp folder for model
+- Create steps for python scripts created above.Data prep script and Training script
+
+Examine the above run and print the metrics of child runs - 
+Register a new model with tag 'Training context' indicating it was trained in the pipeline 
+Publish the pipeline as a REST service - 
+- published pipeline has an endpoint, which you can see in the Endpoints page 
+  (on the Pipeline Endpoints tab) in Azure Machine Learning studio. You can also 
+  find its URI as a property of the published pipeline object
+
+Call the piepline end point - 
+To use the endpoint, client applications need to make a REST call over HTTP. 
+This request must be authenticated, so an authorization header is required. 
+A real application would require a service principal with which to be authenticated, 
+but to test this out, we'll use the authorization header from your current connection 
+to your Azure workspace
+
+Test the end point 
+Schedule the pipeline if it has to be run on predefined times.
+
+Datastores and Datasets
+-----------------------
+Supported Datastorage services - 
+Azure Blob Container
+Azure File Share
+Azure Data Lake
+Azure Data Lake Gen2
+Azure SQL Database
+Azure Database for PostgreSQL
+Databricks File System
+Azure Database for MySQL	
+
+Pipelines
+---------
+PipelineData
+PipelineParameter
+ScheduleRecurrence
+
+Deploy the published end point
+------------------------------
+- After successfully training a model, you must register it in your Azure Machine Learning workspace. Your real-time 
+  service will then be able to load the model when required
+- Alternatively, if you have a reference to the Run used to train the model, you can use its register_model method
+- The model will be deployed as a service that consist of:
+   - A script to load the model and return predictions for submitted data.
+   - An environment in which the script will be run.
+- Create the entry script, sometimes referred to as the scoring script
+- Create an environment
+- Combine the script and environment in an InferenceConfig
+- Define a deployment configuration
+- Deploy the model - return service
+
+Consume the real-time inferencing service
+-----------------------------------------
+Use the Azure Machine Learning SDK
+ - response = service.run(input_data = json_data)
+Use a REST endpoint
+ - endpoint = service.scoring_uri
+ - esponse = requests.post(url = endpoint, data = json_data,headers = request_headers)
+
+Troubleshoot service deployment
+-------------------------------
+As an initial troubleshooting step, you can check the status of a service by examining its state.
+For an operational service, the state should be 'Healthy'.
+ - To view the state of a service, you must use the compute-specific service type 
+   (for example AksWebservice) and not a generic WebService object
+Deployment and runtime errors can be easier to diagnose by deploying the service as a 
+container in a local Docker instance.You can then troubleshoot runtime issues by making changes to the 
+scoring file that is referenced in the inference configuration, and reloading the service without redeploying
+it (something you can only do with a local service.
+
+Batch Inferencing
+-----------------
+Creating a batch inference pipeline
+- Register a model
+- Create a scoring script
+- Create a pipeline with a ParallelRunStep
+- Run the pipeline and retrieve the step output
+
+Publishing a batch inference pipeline
+- publish a batch inferencing pipeline as a REST service
+- Once published, use the service endpoint to initiate a batch inferencing job
+- We can also schedule the published pipeline to have it run automatically
+
+Tune Hyper parameters
+---------------------
+Define a search space - 
+Discrete - qnormal,quniform,qlognormal,qloguniform
+Continous - normal,uniform,lognormal,loguniform
+
+Configuring sampling - 
+Grid sampling - Grid sampling can only be employed when all hyperparameters are discrete, 
+		and is used to try every possible combination of parameters in the search space.
+Random sampling - Random sampling is used to randomly select a value for each hyperparameter, 
+		  which can be a mix of discrete and continuous values as shown in the following code example
+Bayesian sampling - Bayesian sampling chooses hyperparameter values based on the Bayesian optimization algorithm, 
+		    which tries to select parameter combinations that will result in improved performance from
+		    the previous selection.
+
+Configuring early termination - 
+With a sufficiently large hyperparameter search space, it could take many iterations (child runs) to 
+try every possible combination. To help prevent wasting time, you can set an early termination policy 
+that abandons runs that are unlikely to produce a better result than previously completed runs.
+- Bandit policy, Median stopping policy, Truncation selection policy
+
+Creating a training script for hyperparameter tuning
+Configuring and running a hyperdrive experiment
+Monitoring and reviewing hyperdrive runs
+
+Automatic Model selection
+-------------------------
+Restrict algorithm selection
+Preprocessing and featurization
+Configure an automated machine learning experiment
+	Specify data for training
+	Specify the primary metric
+Run the experiment
+
+Differential Privacy
+--------------------
+Differential privacy seeks to protect individual data values by 
+adding statistical "noise" to the analysis process. The noise is 
+different for each analysis, so the results are non-deterministic 
+– in other words, two analyses that perform the same aggregation 
+may produce slightly different results.
+
+Smartnoise.org
+
+Explain Models
+--------------
+Feature Importance - 
+- Global feature importance:  the relative importance of each feature in the 
+  test dataset as a whole. It provides a general comparison of the extent to 
+  which each feature in the dataset influences prediction.
+- Local feature importance:  the influence of each feature value for a specific
+  individual prediction.
+
+Explainers - 
+- Mimic explainer
+- Tabular explainer uses SHAP wrapper
+- PFI Explainer
+
+Fairness in ML models
+---------------------
+Consider model fairness
+Measuring disparity in predictions
+Potential causes of disparity
+  -Data imbalance, Indirect correlation, Societal biases
+Mitigating bias
+  -Balance training and validation data, 
+  -Perform extensive feature selection and engineering analysis
+  -Evaluate models for disparity based on significant features.
+  -Trade-off overall predictive performance for the lower disparity 
+   in predictive performance between sensitive feature groups.
+
+Mitigating unfairness using Fairlearn package -
+Algorithms - Exponentiated Gradient, Grid Search, Threshold Optimizer
+Constraints - Demographic parity, True positive rate parity,
+	      False-positive rate parity, Equalized odds,
+	      Error rate parity, Bounded group loss
+
+Application Insights
+--------------------
+Associate Application Insights with a workspace
+Enable Application Insights for a service
+Write log data
+  - Azure Machine Learning creates a custom dimension 
+    in the Application Insights data model for the output you write.
+
+Data Drift
+----------
+Change in data profiles between training and inferencing is known as data drift.
+Azure Machine Learning supports data drift monitoring through the use of datasets.
+Data drift is measured using a calculated magnitude of change in the statistical 
+distribution of feature values over time.
+
+- Monitor data drift by comparing datasets
+- Configure data drift monitor schedules
+
+Azure Databricks
+----------------
+Azure Databricks is a fully-managed, cloud-based Big Data and Machine Learning platform, 
+which empowers developers to accelerate AI and innovation by simplifying the process of 
+building enterprise-grade production data applications. 
+
+What does Databricks offer that is not Open-Source Spark?
+Databricks Workspace - Interactive Data Science & Collaboration
+Databricks Workflows - Production Jobs & Workflow Automation
+Databricks Runtime
+Databricks I/O (DBIO) - Optimized Data Access Layer
+Databricks Serverless - Fully Managed Auto-Tuning Platform
+Databricks Enterprise Security (DBES) - End-To-End Security & Compliance
+
+Apache Spark - 
+Spark is a unified processing engine that can analyze big data using 
+SQL, 
+machine learning, 
+graph processing, or 
+real-time stream analysis
+
+For a big data pipeline, the data (raw or structured) is ingested into Azure through 
+Azure Data Factory in batches, or 
+streamed near real-time using Apache Kafka, Event Hub, or IoT Hub
+
+As part of analytics workflow, use Azure Databricks to read data from multiple data sources such as 
+Azure Blob Storage, 
+Azure Data Lake Storage, 
+Azure Cosmos DB, or 
+Azure SQL Data Warehouse 
+and turn it into breakthrough insights using Spark
+
+DBFS Databricks file system - 
+DBFS is a layer over a cloud-based object store
+Files in DBFS are persisted to the object store
+The lifetime of files in the DBFS are NOT tied to the lifetime of our cluster
+
+dbutils - Databricks Utilities -
+This module provides various utilities for users to interact with the rest of Databricks.
+credentials: DatabricksCredentialUtils -> Utilities for interacting with credentials within notebooks
+fs: DbfsUtils -> Manipulates the Databricks filesystem (DBFS) from the console
+library: LibraryUtils -> Utilities for session isolated libraries
+meta: MetaUtils -> Methods to hook into the compiler (EXPERIMENTAL)
+notebook: NotebookUtils -> Utilities for the control flow of a notebook (EXPERIMENTAL)
+preview: Preview -> Utilities under preview category
+secrets: SecretUtils -> Provides utilities for leveraging secrets within notebooks
+widgets: WidgetsUtils -> Methods to create and get bound value of input widgets inside notebooks
+
+dbutils.fs.mounts() - 
+As previously mentioned, all our datasets should already be mounted
+We can use dbutils.fs.mounts() to verify that assertion
+This method returns a collection of MountInfo objects, one for each mount
+
+
+Apache Spark Architecture - 
+Azure Databricks provides a notebook-oriented Apache Spark as-a-service workspace environment
+
+3 Vs of Big Data - High volume, High velocity, Variety
+
+two aspects of the Databricks architecture - 
+Azure Databricks service
+Apache Spark clusters
+
+- Spark is a Distributed computing environment. The unit of distribution is a Spark Cluster
+- Every Cluster has a Driver and one or more executors(workers).
+- Work submitted to the Cluster is split into as many independent Jobs as needed.
+- This is how work is distributed across the Cluster's nodes. Jobs are further subdivided into tasks.
+- The input to a job is partitioned into one or more partitions. These partitions are the unit of work
+  for each slot. In between tasks, partitions may need to be re-organized and shared over the network.
+
+Machine Learning in Spark
+-------------------------
+Spark differs from many other machine learning frameworks in that we train our model on a single column
+that contains a vector of all of our features. It uses 'vectorAssembler'.
+
+
+Docker
+Azure datafactory
+Zeppelin notebooks
+Azure HDInsight cluster 
+PostgreSQL 
+Weka environments
+
+Difference between
+Azure machine Azure Machine Learning Service
+Azure Machine Learning Studio
+Azure Databricks
+Azure datascience virtual machine (DSVM) (linux & windows)
+Deep Learning Virtual Machine (DLVM) (linux & windows)
+
+Differece between different compute clusters
+Azure kubernetts clusts AKS
+Azure Container Instance ACI
+GPU clustering
+VM, DSVM
+
+https://docs.microsoft.com/en-us/azure/machine-learning/
+https://docs.microsoft.com/en-us/azure/machine-learning/studio-module-reference/
+https://docs.microsoft.com/en-us/azure/architecture/data-guide/scenarios/interactive-data-exploration
+https://docs.microsoft.com/en-us/azure/machine-learning/team-data-science-process/overview
+https://docs.microsoft.com/en-us/azure/machine-learning/data-science-virtual-machine/overview
+https://azure.microsoft.com/en-us/pricing/details/machine-learning/
+https://docs.microsoft.com/en-us/azure/machine-learning/how-to-deploy-and-where
+https://docs.microsoft.com/en-us/azure/machine-learning/how-to-use-environments
+
