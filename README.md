@@ -13,5 +13,5 @@ https://docs.microsoft.com/en-us/azure/machine-learning/algorithm-module-referen
 https://docs.microsoft.com/en-us/azure/machine-learning/
 
 #### Exam topics - DP 100 questions
-Note - this has questions covering old syllabus as well, but useful. 
+#### Note - this has questions covering old syllabus as well, but useful. 
 https://www.examtopics.com/exams/microsoft/dp-100/view/
