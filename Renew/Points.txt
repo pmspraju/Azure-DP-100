@@ -1,0 +1,489 @@
+------------
+Introduction - 
+------------
+focus your time on training machine learning models
+easily get access of the data you need
+have sufficient compute to train a model
+design a model training solution, which ensures the model keeps performing as expected and stays relevant over time
+
+Define the problem: Decide on what the model should predict and when it's successful.
+Get the data: Find data sources and get access.
+Prepare the data: Explore the data. CLean and transform the data based on the model's requirements.
+Train the model: Choose an algorithm and hyperparameter values based on trial and error.
+Integrate the model: Deploy the model to an endpoint to generate predictions.
+Monitor the model: Track the model's performance.
+
+Classification: Predict a categorical value.
+Regression: Predict a numerical value.
+Time-series forecasting: Predict future numerical values based on time-series data.
+Computer vision: Classify images or detect objects in images.
+Natural language processing (NLP): Extract insights from text.
+
+---------------------------
+services available to train - 
+---------------------------
+Azure Machine Learning
+Azure Databricks
+Azure Synapse Analytics
+Azure Cognitive Services 
+
+Use Azure Cognitive Services whenever one of the customizable prebuilt models suits your requirements, to save time and effort.
+Use Azure Synapse Analytics or Azure Databricks if you want to keep all data-related (data engineering and data science) projects within the same service.
+Use Azure Synapse Analytics or Azure Databricks if you need distributed compute for working with large datasets (datasets are large when you experience capacity constraints with standard compute). You'll need to work with PySpark to use the distributed compute.
+Use Azure Machine Learning or Azure Databricks when you want full control over model training and management.
+Use Azure Machine Learning when Python is your preferred programming language.
+Use Azure Machine Learning when you want an intuitive user interface to manage your machine learning lifecycle.
+
+CPU or GPU - 
+For smaller tabular datasets, CPU will be sufficient and cheaper to use
+with unstructured data like images or text, GPUs will be more powerful and effective
+
+two common types of virtual machine - 
+General purpose
+Memory optimized
+
+Spark - 
+Services like Azure Synapse Analytics and Azure Databricks offer Spark compute
+use the same sizing as virtual machines in Azure but distribute the workloads
+A Spark cluster consists of a driver node and worker nodes. a service that distributes the work, parts of the workload can be executed in parallel, reducing the processing time. Finally, the work is summarized and the driver node communicates the result back to you.
+
+---------------
+Developer tools - 
+---------------
+
+The Azure Machine Learning studio.
+The Python Software Development Kit (SDK).
+The Azure Command Line Interface (CLI).
+
+Machine Learning Studio - Though you can use each tool at any time, you may prefer to use the studio whenever you want to use a no-code approach.
+Notebooks    - Jupyter notebooks
+Automated ML - A wizard interface that enables you to train a model using a combination of algorithms and data preprocessing techniques to find the best model for your data.
+Designer     - A drag and drop interface that allows you to create pipelines with prebuilt (custom) components.
+
+Python SDK - ideal tool for data scientists that can be used in any Python environment. Whether you normally work with Jupyter notebooks, Visual Studio Code, you can install the 
+Python SDK and connect to the workspace.
+
+To authenticate, you need the values to three necessary parameters:
+subscription_id: Your subscription ID.
+resource_group: The name of your resource group.
+workspace_name: The name of your workspace.
+
+After defining the authentication, you need to call MLClient for the environment to connect to the workspace to create or update an asset or resource in the workspace.
+
+CLI - The Azure CLI is commonly used by administrators and engineers to automate tasks in Azure.
+
+The Azure CLI allows you to:
+Automate the creation and configuration of assets and resources to make it repeatable.
+Ensure consistency for assets and resources that must be replicated in multiple environments (for example, development, test, and production).
+Incorporate machine learning asset configuration into developer operations (DevOps) workflows, such as continuous integration and continuous deployment (CI/CD) pipelines.
+
+--------------
+Work with Data -
+--------------
+
+Uniform Resource Identifiers (URIs).
+Create and use datastores.
+Create and use data assets.
+
+URI - To find and access data in Azure Machine Learning, you'll use Uniform Resource Identifiers (URIs)
+
+Three common protocols when working with data in the context of Azure Machine Learning:
+http(s): Use for data stores publicly or privately in an Azure Blob Storage or publicly available http(s) location.
+abfs(s): Use for data stores in an Azure Data Lake Storage Gen 2.
+azureml: Use for data stored in a datastore.
+
+Datastore - 
+- A datastore is a reference to an existing storage account on Azure.
+- When you create a datastore in Azure Machine Learning, you'll store the connection and authentication information in the workspace. 
+	Then, to access the data in the container, you can use the azureml protocol.
+- In Azure Machine Learning, datastores are abstractions for cloud data sources. They encapsulate the information needed to connect to data sources, 
+	and securely store this connection information so that you don’t have to code it in your scripts.
+- When you create a datastore with an existing storage account on Azure, you have the choice between two different authentication methods:
+	Credential-based: Use a service principal, shared access signature (SAS) token or account key to authenticate access to your storage account.
+	Identity-based: Use your Azure Active Directory identity or managed identity.
+- Types of datasources:
+	Azure Blob Storage
+	Azure File Share
+	Azure Data Lake (Gen 1)
+	Azure Data Lake (Gen 2)
+- Every workspace has four built-in datastores (two Azure Storage blob containers, and two Azure Storage file shares), 
+	which are used as system storages by Azure Machine Learning.
+- Datastores are attached to workspaces and are used to store connection information to storage services.
+
+Data assets - data assets are references to where the data is stored, how to get access, and any other relevant metadata.
+- You can create data assets to get access to data in datastores. The benefits of using data assets are:
+	You can share and reuse data with other members of the team such that they don't need to remember file locations.
+	You can seamlessly access data during model training (on any supported compute type) without worrying about connection strings or data paths.
+	You can version the metadata of the data asset.
+- three main types of data assets you can use:
+	URI file: Points to a specific file.
+	URI folder: Points to a folder.
+	MLTable: Points to a folder or file, and includes a schema to read as tabular data.
+
+URI example - from azure.ai.ml.constants import AssetTypes.URI_FILE
+Local: ./<path>
+Azure Blob Storage: wasbs://<account_name>.blob.core.windows.net/<container_name>/<folder>/<file>
+Azure Data Lake Storage (Gen 2): abfss://<file_system>@<account_name>.dfs.core.windows.net/<folder>/<file>
+Datastore: azureml://datastores/<datastore_name>/paths/<folder>/<file>
+
+URI Folder - from azure.ai.ml.constants import AssetTypes.URI_FOLDER
+
+ML Table data asset - A MLTable data asset allows you to point to tabular data.
+- use a MLTable data asset when the schema of your data is complex or changes frequently.
+- When you create a MLTable data asset, you specify the schema definition to read the data. 
+- To define the schema, it's recommended to include a MLTable file in the same folder as the data you want to read.
+- from azure.ai.ml.constants import AssetTypes.MLTABLE
+
+---------------
+Compute targets - 
+---------------
+types of compute targets - 
+Compute instance
+Compute clusters
+Kubernetes clusters
+Attached compute
+inference
+
+experimentation - When working with notebooks, you'll therefore want to use a compute instance.
+production - When training models with scripts, you'll prefer a compute cluster.
+scalability - When you want to train multiple models simultaneously to speed up processing time, you'll want to use a compute cluster. 
+
+When you create a compute cluster, there are three main parameters you need to consider:
+size: Specifies the virtual machine type of each node within the compute cluster. Based on the sizes for virtual machines in Azure. 
+		Next to size, you can also specify whether you want to use CPUs or GPUs.
+max_instances: Specifies the maximum number of nodes your compute cluster can scale out to. The number of parallel workloads your 
+		compute cluster can handle is analogous to the number of nodes your cluster can scale to.
+tier: Specifies whether your virtual machines will be low priority or dedicated. Setting to low priority can lower costs as you're not guaranteed availability.
+
+There are three main scenarios in which you'll want to use a compute cluster:
+Running a pipeline job you built in the Designer.
+Running an Automated Machine Learning job.
+Running a script as a job.
+
+------
+AutoML -
+------
+Preprocessing - 
+- After you've collected the data, you need to create a data asset in Azure Machine Learning. 
+- In order for AutoML to understand how to read the data, you need to create a MLTable data asset that includes the schema of the data.
+- You can create a MLTable data asset when your data is stored in a folder together with a MLTable file.
+
+Scaling&Normalization -
+AutoML applies scaling and normalization to numeric data automatically, helping prevent any large-scale features from dominating training. 
+During an AutoML experiment, multiple scaling or normalization techniques will be applied.
+
+Featurization - 
+- By default, AutoML will perform featurization on your data. You can disable it if you don't want the data to be transformed.
+- You can choose to have AutoML apply preprocessing transformations, such as:
+	Missing value imputation to eliminate nulls in the training dataset.
+	Categorical encoding to convert categorical features to numeric indicators.
+	Dropping high-cardinality features, such as record IDs.
+	Feature engineering (for example, deriving individual date parts from DateTime features)
+	
+- To run an automated machine learning (AutoML) experiment, you can configure and submit the job with the Python SDK.
+- By default, AutoML will randomly select from the full range of algorithms for the specified task. 
+	You can choose to block individual algorithms from being selected.
+- use the Python SDK (v2) to configure an AutoML experiment or job, you configure the experiment using the automl class.
+- One of the most important settings you must specify is the primary_metric.
+- To minimize costs and time spent on training, you can set limits to an AutoML experiment or job by using set_limits()
+	timeout_minutes: Number of minutes after which the complete AutoML experiment is terminated.
+	trial_timeout_minutes: Maximum number of minutes one trial can take.
+	max_trials: Maximum number of trials, or models that will be trained.
+	enable_early_termination: Whether to end the experiment if the score isn't improving in the short term.
+
+---------------------
+Script as command job - 
+---------------------
+- Convert a notebook to a script.
+	Remove nonessential code.
+	Refactor your code into functions.
+	Test your script in the terminal.
+	
+- Run a script as a command job. To run a script, you'll need to specify values for the following parameters:
+	code: The folder that includes the script to run.
+	command: Specifies which file to run.
+	environment: The necessary packages to be installed on the compute before running the command.
+	compute: The compute to use to run the command.
+	display_name: The name of the individual job.
+	experiment_name: The name of the experiment the job belongs to.
+	
+- Use parameters in a command job.
+	To use parameters in a script, you must use a library such as argparse to read arguments passed to the script and assign them to variables.
+	To pass parameter values to a script, you need to provide the argument value in the command.
+	job = command(
+    code="./src",
+    command="python train.py --training_data diabetes.csv",
+    environment="AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest",
+    compute="aml-cluster",
+    display_name="train-model",
+    experiment_name="train-classification-model"
+    )
+	
+---------------------
+Hyperparameter tuning - Hyperparameter tuning is accomplished by training the multiple models, using the same algorithm and training data but different hyperparameter values.
+---------------------
+- In Azure Machine Learning, you can tune hyperparameters by submitting a script as a sweep job. 
+- A sweep job will run a trial for each hyperparameter combination to be tested. 
+- Each trial uses a training script with parameterized hyperparameter values to train a model, and logs the target performance metric achieved by the trained model.
+
+- Define a hyperparameter search space.
+	Some hyperparameters require discrete values
+	Some hyperparameters are continuous
+	To define a search space for hyperparameter tuning, create a dictionary with the appropriate parameter expression for each named hyperparameter.
+	
+- Configure hyperparameter sampling. Three main sampling methods available in Azure Machine Learning:
+	Grid sampling: Tries every possible combination. Only be applied when all hyperparameters are discrete
+	Random sampling: Randomly chooses values from the search space.
+	Sobol: Adds a seed to random sampling to make the results reproducible.
+	Bayesian sampling: Chooses new values based on previous results.
+	
+- Select an early-termination policy.
+	evaluation_interval - Specifies at which interval you want the policy to be evaluated
+	delay_evaluation - Specifies when to start evaluating the policy.
+	
+	Bandit policy - Uses a slack_factor (relative) or slack_amount(absolute). Any new model must perform within the slack range of the best performing model.
+	Median stopping policy - Uses the median of the averages of the primary metric. Any new model must perform better than the median.
+	Truncation selection policy - Uses a truncation_percentage, which is the percentage of lowest performing trials. 
+									Any new model must perform better than the lowest performing trials.
+
+- Run a sweep job - To run a sweep job, you need to create a training script just the way you would do for any other training job, except that your script must:
+	- Include an argument for each hyperparameter you want to vary.
+	- Log the target performance metric with MLflow. A logged metric enables the sweep job to evaluate the performance of the trials it initiates, 
+		and identify the one that produces the best performing model.
+		
+	- To prepare the sweep job, you must first create a base command job that specifies which script to run and defines the parameters used by the script
+	- Finally, call sweep() on your command job to sweep over your search space
+
+
+-------------
+Run Pipelines - 
+-------------
+Create components - 
+- Components allow you to create reusable scripts that can easily be shared across users within the same Azure Machine Learning workspace.
+- For example, a component may consist of a Python script that normalizes your data, trains a machine learning model, or evaluates a model.
+- Components can be easily shared to other Azure Machine Learning users, who can reuse components in their own Azure Machine Learning pipelines.
+
+A component consists of three parts:
+Metadata: Includes the component's name, version, etc.
+Interface: Includes the expected input parameters (like a dataset or hyperparameter) and expected output (like metrics and artifacts).
+Command, code and environment: Specifies how to run the code.
+
+Create Component - 
+To create a component, you need two files:
+- A script that contains the workflow you want to execute.
+- A YAML file to define the metadata, interface, and command, code, and environment of the component.
+- To use components in a pipeline, you'll need the script and the YAML file.
+
+Register component - 
+To make the components accessible to other users in the workspace, you can also register components to the Azure Machine Learning workspace.
+
+Build an Azure Machine Learning pipeline - In Azure Machine Learning, a pipeline is a workflow of machine learning tasks in which each task is defined as a component.
+Create Pipeline - 
+- Components can be arranged sequentially or in parallel
+- Each component can be run on a specific compute target
+- A pipeline can be executed as a process by running the pipeline as a pipeline job. 
+- Each component is executed as a child job as part of the overall pipeline job.
+
+Build a pipeline - 
+- An Azure Machine Learning pipeline is defined in a YAML file. The YAML file includes the pipeline job name, inputs, outputs, and settings.
+- create the YAML file, or use the @pipeline() function to create the YAML file.
+- The result of running the @pipeline() function is a YAML file that you can review by printing the pipeline_job object created when calling the function with @pipeline() decorator.
+
+Run an Azure Machine Learning pipeline - 
+Configure - 
+- edit the pipeline configurations by specifying which parameters you want to change and the new value.
+- For example, you may want to change the output mode for the pipeline job outputs.
+    - pipeline_job.outputs.pipeline_job_transformed_data.mode = "upload" # change the output mode
+	- pipeline_job.settings.default_compute = "aml-cluster" # set pipeline level compute
+	
+Run - 
+- To submit the pipeline job, run the following code:
+	# submit job to workspace
+	pipeline_job = ml_client.jobs.create_or_update(
+		pipeline_job, experiment_name="pipeline_job"
+	)
+- A pipeline job also contains child jobs, which represent the execution of the individual components.
+- To troubleshoot a failed pipeline, you can check the outputs and logs of the pipeline job and its child jobs.
+
+Schedule - 
+- To schedule a pipeline job, you'll use the JobSchedule class to associate a schedule to a pipeline job.
+- Create a Schedule
+	from azure.ai.ml.entities import RecurrenceTrigger
+	schedule_name = "run_every_minute"
+	
+	recurrence_trigger = RecurrenceTrigger(
+		frequency="minute",
+		interval=1,
+	)
+- Schedule the pipeline
+	from azure.ai.ml.entities import JobSchedule
+	job_schedule = JobSchedule(
+		name=schedule_name, trigger=recurrence_trigger, create_job=pipeline_job
+	)
+	job_schedule = ml_client.schedules.begin_create_or_update(
+		schedule=job_schedule
+	).result()
+	
+--------------
+Deploy a model - To consume the model, you need to deploy it.
+--------------
+
+Create managed online endpoints - 
+-------------------------------
+- An endpoint is an HTTPS endpoint to which you can send data, and which will return a response (almost) immediately.
+- The scoring script loads the trained model to predict the label for the new input data, which is also called inferencing.
+- the scoring script is hosted on the endpoint
+
+Types of end points - Within Azure Machine Learning, there are two types of online endpoints:
+- Managed online endpoints: Azure Machine Learning manages all the underlying infrastructure.
+- Kubernetes online endpoints: Users manage the Kubernetes cluster which provides the necessary infrastructure.
+
+To deploy your model to a managed online endpoint, you need to specify four things:
+- Model assets like the model pickle file, or a registered model in the Azure Machine Learning workspace.
+- Scoring script that loads the model.
+- Environment which lists all necessary packages that need to be installed on the compute of the endpoint.
+- Compute configuration including the needed compute size and scale settings to ensure you can handle the amount of requests the endpoint will receive.
+
+Blue/green deployment - One endpoint can have multiple deployments. One approach is the blue/green deployment.
+- Blue - best performing model.
+- Green - retrained, and a new version
+- Both versions of the model are deployed to the same endpoint, which is integrated with the application. 
+- When a request is sent to the endpoint, 90% of the traffic can go to the blue deployment*, and 10% of the traffic can go to the green deployment.
+- You can decide how much traffic to forward to each deployed model. 
+
+create an online endpoint - 
+- use the ManagedOnlineEndpoint class, which requires the following parameters
+	- name: Name of the endpoint. Must be unique in the Azure region.
+	- auth_mode: Use key for key-based authentication. Use aml_token for Azure Machine Learning token-based authentication.
+
+Deploy your MLflow model to a managed online endpoint - 
+-----------------------------------------------------
+- The easiest way to deploy a model to an online endpoint is to use an MLflow model and deploy it to a managed online endpoint. 
+- To deploy an MLflow model, you must have model files stored on a local path or with a registered model. 
+- You can log model files when training a model by using MLflow tracking.
+- also need to specify the compute configuration for the deployment:
+  - instance_type: Virtual machine (VM) size to use.
+  - instance_count: Number of instances to use.
+
+Deploy a custom model to a managed online endpoint - 
+--------------------------------------------------
+To deploy a custom model, you must have:
+- Model files stored on local path or registered model.
+- A scoring script.
+- An execution environment.
+
+The scoring script needs to include two functions:
+init(): Called when the service is initialized.
+        when the deployment is created or updated, to load and cache the model from the model registry.
+		
+run(): Called when new data is submitted to the service.
+	   called for every time the endpoint is invoked, to generate predictions from the input data
+	   
+Create an environment:
+- deployment requires an execution environment in which to run the scoring script.
+- create an environment with a Docker image with Conda dependencies, or with a Dockerfile.
+
+Create the deployment: To deploy a model to an endpoint, we need:
+- instance_type: Virtual machine (VM) size to use. 
+- instance_count: Number of instances to use.
+
+Test online endpoints - 
+---------------------
+- list all endpoints in the Azure Machine Learning studio, by navigating to the Endpoints page. 
+- In the Real-time endpoints tab, all endpoints are shown.
+
+
+---------------------------
+Deploy to a Batch end point - 
+---------------------------
+- In machine learning, batch inferencing is used to asynchronously apply a predictive model to multiple cases and write the results to a file or database.
+- An endpoint is an HTTPS endpoint that you can call to trigger a batch scoring job. 
+- The advantage of such an endpoint is that you can trigger the batch scoring job from another service, such as Azure Synapse Analytics or Azure Databricks. 
+- A batch endpoint allows you to integrate the batch scoring with an existing data ingestion and transformation pipeline.
+
+Create a batch endpoint - 
+-----------------------
+- To create a batch endpoint, use the BatchEndpoint class. Batch endpoint names need to be unique within an Azure region.
+
+Deploy model - 
+------------
+- We can deploy multiple models to a batch endpoint.
+- Whenever you call the batch endpoint, which triggers a batch scoring job, the default deployment will be used unless specified otherwise.
+
+Deploy MLFlow model - 
+-------------------
+- Azure Machine Learning will automatically generate the scoring script and environment for MLflow models.
+- To avoid needing a scoring script and environment, an MLflow model needs to be registered in the Azure Machine Learning workspace before you can deploy it to a batch endpoint.
+- To register an MLflow model, you'll use the Model class, while specifying the model type to be MLFLOW_MODEL.
+
+- To deploy an MLflow model to a batch endpoint, you'll use the BatchDeployment class.
+- The advantage of using a compute cluster to run the scoring script is that you can run the scoring script on separate instances in parallel.
+- When you configure the model deployment, you can specify:
+	instance_count: Count of compute nodes to use for generating predictions.
+	max_concurrency_per_instance: Maximum number of parallel scoring script runs per compute node.
+	mini_batch_size: Number of files passed per scoring script run.
+	output_action: What to do with the predictions: summary_only or append_row.
+	output_file_name: File to which predictions will be appended, if you choose append_row for output_action.
+	
+Deploy Custom model - 
+-------------------
+- To deploy a custom model (not an MLFlow model), we need to create the scoring script and environment.
+
+Create the scoring script - 
+- The scoring script is a file that reads the new data, loads the model, and performs the scoring.
+- The scoring script must include two functions:
+	init(): Called once at the beginning of the process, so use for any costly or common preparation like loading the model.
+	run(): Called for each mini batch to perform the scoring.
+	The run() method should return a pandas DataFrame or an array/list.
+
+Create an environment -
+- Deployment requires an execution environment in which to run the scoring script.
+- Create an environment with a Docker image with Conda dependencies, or with a Dockerfile.
+- Add the library azureml-core as it is required for batch deployments to work.
+
+Invoke and Troubleshoot-
+-----------------------
+- When you invoke a batch endpoint, you trigger an Azure Machine Learning pipeline job.
+- To prepare data for batch predictions, you can register a folder as a data asset in the Azure Machine Learning workspace.
+- You can then use the registered data asset as input when invoking the batch endpoint with the Python SDK
+- The batch scoring job runs as a pipeline job. If you want to troubleshoot the pipeline job, 
+	you can review its details and the outputs and logs of the pipeline job itself.
+- If you want to troubleshoot the scoring script, you can select the child job and review its outputs and logs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
